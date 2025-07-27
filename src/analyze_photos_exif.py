@@ -205,10 +205,10 @@ def process_with_progress(filepaths: List[Path], config: PhotoAnalyzerConfig) ->
     return results
 
 def analyze_photo_for_category(exif_data: Dict[str, Any], config: PhotoAnalyzerConfig) -> str:
-    """Analyze EXIF data to determine photo category with configurable scoring"""
+    """Analyze EXIF data to determine photo category with improved accuracy and context awareness"""
     category_scores = {cat: 0 for cat in config.config['categories'].keys()}
     
-    # Extract relevant EXIF fields
+    # Extract relevant EXIF fields with better parsing
     focal_length = exif_data.get('FocalLength', '').replace(' mm', '')
     f_number = exif_data.get('FNumber', 0)
     iso = exif_data.get('ISO', 0)
@@ -219,93 +219,229 @@ def analyze_photo_for_category(exif_data: Dict[str, Any], config: PhotoAnalyzerC
     scene_mode = exif_data.get('SceneMode', '')
     subject_distance = exif_data.get('SubjectDistance', '')
     lens_model = exif_data.get('LensModel', '') or exif_data.get('LensSpec', '')
+    exposure_mode = exif_data.get('ExposureMode', '')
+    flash = exif_data.get('Flash', '')
     
-    # Convert focal length to float
+    # Convert focal length to float with better error handling
     try:
         focal_length_num = float(focal_length) if focal_length else 0
-    except:
+    except (ValueError, TypeError):
         focal_length_num = 0
     
-    # Portrait detection
+    # Convert f-number to float
+    try:
+        f_number_num = float(f_number) if f_number else 0
+    except (ValueError, TypeError):
+        f_number_num = 0
+    
+    # Convert ISO to int
+    try:
+        iso_num = int(iso) if iso else 0
+    except (ValueError, TypeError):
+        iso_num = 0
+    
+    # Enhanced Portrait detection with context
     portrait_config = config.config['categories']['Portrait']
+    portrait_score = 0
+    
+    # Primary indicators
     if (portrait_config['focal_range'][0] <= focal_length_num <= portrait_config['focal_range'][1]):
-        category_scores['Portrait'] += 3 * portrait_config['weight']
-    if f_number and float(f_number) <= portrait_config['f_number_max']:
-        category_scores['Portrait'] += 2 * portrait_config['weight']
+        portrait_score += 4 * portrait_config['weight']
+    if f_number_num > 0 and f_number_num <= portrait_config['f_number_max']:
+        portrait_score += 3 * portrait_config['weight']
     if 'portrait' in scene_mode.lower():
-        category_scores['Portrait'] += 5 * portrait_config['weight']
-    if af_area_mode in ['Center', 'Spot', 'Flexible Spot']:
-        category_scores['Portrait'] += 1 * portrait_config['weight']
+        portrait_score += 6 * portrait_config['weight']
     
-    # Landscape detection
+    # Secondary indicators
+    if af_area_mode in ['Center', 'Spot', 'Flexible Spot', 'Single Point']:
+        portrait_score += 2 * portrait_config['weight']
+    if focus_mode in ['AF-S', 'Single AF']:
+        portrait_score += 1 * portrait_config['weight']
+    if exposure_mode in ['Aperture Priority', 'Manual']:
+        portrait_score += 1 * portrait_config['weight']
+    
+    # Negative indicators (reduce score if present)
+    if focal_length_num < 35:  # Too wide for typical portraits
+        portrait_score -= 2
+    if f_number_num > 8:  # Too narrow aperture
+        portrait_score -= 2
+    
+    category_scores['Portrait'] = max(0, portrait_score)
+    
+    # Enhanced Landscape detection
     landscape_config = config.config['categories']['Landscape']
+    landscape_score = 0
+    
+    # Primary indicators
     if (landscape_config['focal_range'][0] <= focal_length_num <= landscape_config['focal_range'][1]):
-        category_scores['Landscape'] += 3 * landscape_config['weight']
-    if f_number and float(f_number) >= landscape_config['f_number_min']:
-        category_scores['Landscape'] += 2 * landscape_config['weight']
+        landscape_score += 4 * landscape_config['weight']
+    if f_number_num >= landscape_config['f_number_min']:
+        landscape_score += 3 * landscape_config['weight']
     if 'landscape' in scene_mode.lower():
-        category_scores['Landscape'] += 5 * landscape_config['weight']
-    if af_area_mode in ['Wide', 'Zone']:
-        category_scores['Landscape'] += 1 * landscape_config['weight']
+        landscape_score += 6 * landscape_config['weight']
     
-    # Street photography detection
+    # Secondary indicators
+    if af_area_mode in ['Wide', 'Zone', 'Multi']:
+        landscape_score += 2 * landscape_config['weight']
+    if focus_mode in ['AF-S', 'Manual']:
+        landscape_score += 1 * landscape_config['weight']
+    if exposure_mode in ['Aperture Priority', 'Manual']:
+        landscape_score += 1 * landscape_config['weight']
+    
+    # Negative indicators
+    if focal_length_num > 100:  # Too telephoto for typical landscapes
+        landscape_score -= 2
+    if f_number_num < 4:  # Too wide aperture
+        landscape_score -= 2
+    
+    category_scores['Landscape'] = max(0, landscape_score)
+    
+    # Enhanced Street photography detection
     street_config = config.config['categories']['Street']
-    if (street_config['focal_range'][0] <= focal_length_num <= street_config['focal_range'][1]):
-        category_scores['Street'] += 2 * street_config['weight']
-    if metering_mode in ['Average', 'Center-weighted average']:
-        category_scores['Street'] += 1 * street_config['weight']
-    if focus_mode in ['AF-C', 'Continuous AF']:
-        category_scores['Street'] += 1 * street_config['weight']
-    if 4 <= float(f_number) <= 8:
-        category_scores['Street'] += 1 * street_config['weight']
+    street_score = 0
     
-    # Wildlife/Sports detection
+    # Primary indicators
+    if (street_config['focal_range'][0] <= focal_length_num <= street_config['focal_range'][1]):
+        street_score += 3 * street_config['weight']
+    if 3.5 <= f_number_num <= 8:
+        street_score += 2 * street_config['weight']
+    
+    # Secondary indicators
+    if metering_mode in ['Average', 'Center-weighted average', 'Multi-segment']:
+        street_score += 1 * street_config['weight']
+    if focus_mode in ['AF-C', 'Continuous AF']:
+        street_score += 2 * street_config['weight']
+    if exposure_mode in ['Aperture Priority', 'Program']:
+        street_score += 1 * street_config['weight']
+    if af_area_mode in ['Wide', 'Zone']:
+        street_score += 1 * street_config['weight']
+    
+    # Context indicators
+    if iso_num >= 400:  # Higher ISO for low light street
+        street_score += 1 * street_config['weight']
+    
+    category_scores['Street'] = max(0, street_score)
+    
+    # Enhanced Wildlife/Sports detection
     wildlife_config = config.config['categories']['Wildlife']
     sports_config = config.config['categories']['Sports']
-    if (wildlife_config['focal_range'][0] <= focal_length_num <= wildlife_config['focal_range'][1]):
-        category_scores['Wildlife'] += 4 * wildlife_config['weight']
-        category_scores['Sports'] += 3 * sports_config['weight']
-    if focus_mode in ['AF-C', 'Continuous AF']:
-        category_scores['Wildlife'] += 1 * wildlife_config['weight']
-        category_scores['Sports'] += 2 * sports_config['weight']
-    if shutter_speed and ('1/500' in shutter_speed or '1/1000' in shutter_speed):
-        category_scores['Sports'] += 2 * sports_config['weight']
     
-    # Macro detection
+    wildlife_score = 0
+    sports_score = 0
+    
+    # Primary indicators
+    if (wildlife_config['focal_range'][0] <= focal_length_num <= wildlife_config['focal_range'][1]):
+        wildlife_score += 5 * wildlife_config['weight']
+        sports_score += 4 * sports_config['weight']
+    
+    # Secondary indicators
+    if focus_mode in ['AF-C', 'Continuous AF']:
+        wildlife_score += 2 * wildlife_config['weight']
+        sports_score += 3 * sports_config['weight']
+    
+    # Shutter speed analysis for sports
+    if shutter_speed:
+        try:
+            # Parse shutter speed (e.g., "1/500" -> 0.002)
+            if '/' in shutter_speed:
+                parts = shutter_speed.split('/')
+                if len(parts) == 2:
+                    speed = float(parts[0]) / float(parts[1])
+                    if speed <= 0.002:  # 1/500 or faster
+                        sports_score += 3 * sports_config['weight']
+                    elif speed <= 0.01:  # 1/100 or faster
+                        sports_score += 1 * sports_config['weight']
+        except:
+            pass
+    
+    # Context indicators
+    if af_area_mode in ['Zone', 'Wide']:
+        wildlife_score += 1 * wildlife_config['weight']
+        sports_score += 1 * sports_config['weight']
+    
+    category_scores['Wildlife'] = max(0, wildlife_score)
+    category_scores['Sports'] = max(0, sports_score)
+    
+    # Enhanced Macro detection
     macro_config = config.config['categories']['Macro']
+    macro_score = 0
+    
+    # Primary indicators
     if 'macro' in lens_model.lower():
-        category_scores['Macro'] += 5 * macro_config['weight']
+        macro_score += 8 * macro_config['weight']
+    
+    # Subject distance analysis
     if subject_distance and 'cm' in subject_distance:
         try:
             distance = float(subject_distance.replace(' cm', ''))
             if distance < macro_config['subject_distance_max']:
-                category_scores['Macro'] += 3 * macro_config['weight']
+                macro_score += 4 * macro_config['weight']
         except:
             pass
     
-    # Night photography detection
+    # Secondary indicators
+    if f_number_num >= 8:  # Narrow aperture for depth of field
+        macro_score += 1 * macro_config['weight']
+    if focus_mode in ['AF-S', 'Manual']:
+        macro_score += 1 * macro_config['weight']
+    
+    category_scores['Macro'] = max(0, macro_score)
+    
+    # Enhanced Night photography detection
     night_config = config.config['categories']['Night']
-    if iso >= night_config['iso_min']:
-        category_scores['Night'] += 2 * night_config['weight']
-    if iso >= 3200:
-        category_scores['Night'] += 2 * night_config['weight']
+    night_score = 0
+    
+    # Primary indicators
+    if iso_num >= night_config['iso_min']:
+        night_score += 3 * night_config['weight']
     if 'night' in scene_mode.lower():
-        category_scores['Night'] += 5 * night_config['weight']
+        night_score += 6 * night_config['weight']
     
-    # Architecture detection
+    # Secondary indicators
+    if iso_num >= 3200:
+        night_score += 2 * night_config['weight']
+    if f_number_num >= 2.8:  # Wide aperture for low light
+        night_score += 1 * night_config['weight']
+    if flash and 'No flash' not in flash:
+        night_score += 1 * night_config['weight']
+    
+    category_scores['Night'] = max(0, night_score)
+    
+    # Enhanced Architecture detection
     arch_config = config.config['categories']['Architecture']
+    arch_score = 0
+    
+    # Primary indicators
     if (arch_config['focal_range'][0] <= focal_length_num <= arch_config['focal_range'][1]):
-        category_scores['Architecture'] += 2 * arch_config['weight']
-    if f_number and 8 <= float(f_number) <= 11:
-        category_scores['Architecture'] += 1 * arch_config['weight']
+        arch_score += 3 * arch_config['weight']
+    if 5.6 <= f_number_num <= 11:
+        arch_score += 2 * arch_config['weight']
     
-    # Event detection (burst sequences will be added later)
+    # Secondary indicators
+    if focus_mode in ['AF-S', 'Manual']:
+        arch_score += 1 * arch_config['weight']
+    if af_area_mode in ['Center', 'Spot']:
+        arch_score += 1 * arch_config['weight']
+    if exposure_mode in ['Aperture Priority', 'Manual']:
+        arch_score += 1 * arch_config['weight']
+    
+    category_scores['Architecture'] = max(0, arch_score)
+    
+    # Event detection (burst sequences will be handled separately)
+    event_score = 0
     if exif_data.get('BurstMode'):
-        category_scores['Event'] += 2 * config.config['categories']['Event']['weight']
+        event_score += 3 * config.config['categories']['Event']['weight']
+    if exif_data.get('SequenceNumber'):
+        event_score += 1 * config.config['categories']['Event']['weight']
     
-    # Find category with highest score
+    category_scores['Event'] = max(0, event_score)
+    
+    # Find category with highest score and apply confidence threshold
     max_score = max(category_scores.values())
-    if max_score == 0:
+    
+    # Apply confidence threshold - require minimum score to avoid false positives
+    confidence_threshold = 3.0
+    if max_score < confidence_threshold:
         return 'Uncategorized'
     
     # Return category with highest score
@@ -507,6 +643,26 @@ def main(source_dir: Optional[str] = None, output_dir: Optional[str] = None, con
                 photo['analyzed_category'] = 'Event'
                 category_distribution['Event'].append(photo)
     
+    # Optional: Integrate Claude AI analysis for content validation
+    try:
+        from .claude_analyzer import ClaudePhotoAnalyzer, integrate_claude_analysis
+        
+        claude_analyzer = ClaudePhotoAnalyzer()
+        if claude_analyzer.enabled:
+            logger.info("Claude AI analysis enabled - running content validation...")
+            all_photos = integrate_claude_analysis(all_photos, claude_analyzer, sample_size=20)
+            
+            # Recalculate category distribution after Claude analysis
+            category_distribution = defaultdict(list)
+            for photo in all_photos:
+                category_distribution[photo['analyzed_category']].append(photo)
+        else:
+            logger.info("Claude AI analysis disabled - using EXIF-only categorization")
+    except ImportError:
+        logger.info("Claude AI module not available - using EXIF-only categorization")
+    except Exception as e:
+        logger.warning(f"Claude AI analysis failed: {e} - continuing with EXIF-only categorization")
+    
     # Create summary report
     summary = {
         'total_files': len(all_photos),
@@ -540,8 +696,8 @@ def main(source_dir: Optional[str] = None, output_dir: Optional[str] = None, con
         'burst_sequences': [[p['filename'] for p in burst] for burst in bursts[:5]]  # First 5 bursts
     }
     
-    # Find mismatched categorizations
-    for photo in all_photos[:100]:  # Sample first 100
+    # Find mismatched categorizations (limited to first 50 for simplicity)
+    for photo in all_photos[:50]:
         if photo.get('current_category') and photo['current_category'] != photo['analyzed_category']:
             analysis_data['sample_mismatches'].append({
                 'filename': photo['filename'],
@@ -554,63 +710,19 @@ def main(source_dir: Optional[str] = None, output_dir: Optional[str] = None, con
                 'scene_mode': photo.get('scene_mode')
             })
     
-    # Save analysis results
+    # Save detailed analysis results
     analysis_path = output_dir / 'exif_analysis_results.json'
     with open(analysis_path, 'w') as f:
         json.dump(analysis_data, f, indent=2)
     
-    # Create detailed report
-    report_lines = [
-        "=== Enhanced EXIF-Based Photo Analysis Report ===",
-        f"Analysis timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
-        f"Total RAW Files: {summary['total_files']}",
-        f"Date Range: {summary['date_range']['start']} to {summary['date_range']['end']}",
-        "",
-        "Processing Configuration:",
-        f"  - Cache enabled: {config.config['cache_enabled']}",
-        f"  - Max workers: {config.config['max_workers']}",
-        f"  - Batch size: {config.config['batch_size']}",
-        "",
-        "Analyzed Category Distribution:",
-    ]
+    # Create simplified reports
+    simple_report_path = create_simplified_report(analysis_data, output_dir)
+    simple_json_path = create_json_summary(analysis_data, output_dir)
     
-    for cat, count in sorted(summary['analyzed_categories'].items()):
-        report_lines.append(f"  - {cat}: {count} photos")
-    
-    report_lines.extend([
-        "",
-        "Category Comparison (Current → Analyzed):",
-    ])
-    
-    for current_cat, analyzed_cats in sorted(category_comparison.items()):
-        report_lines.append(f"\n{current_cat}:")
-        for analyzed_cat, count in sorted(analyzed_cats.items()):
-            if current_cat != analyzed_cat:
-                report_lines.append(f"  → {analyzed_cat}: {count} photos (mismatch)")
-            else:
-                report_lines.append(f"  → {analyzed_cat}: {count} photos (match)")
-    
-    report_lines.extend([
-        "",
-        f"Burst Sequences: {len(bursts)} sequences with {len(burst_photos)} total photos",
-        "",
-        "Sample Miscategorized Photos:",
-    ])
-    
-    for mismatch in analysis_data['sample_mismatches'][:10]:
-        report_lines.append(f"\n{mismatch['filename']}:")
-        report_lines.append(f"  Current: {mismatch['current_category']} → Analyzed: {mismatch['analyzed_category']}")
-        report_lines.append(f"  Focal Length: {mismatch['focal_length']}, f/{mismatch['f_number']}, ISO {mismatch['iso']}")
-        report_lines.append(f"  Focus Mode: {mismatch['focus_mode']}, Scene: {mismatch['scene_mode']}")
-    
-    # Save report
-    report_path = output_dir / 'exif_analysis_report.txt'
-    with open(report_path, 'w') as f:
-        f.write('\n'.join(report_lines))
-    
-    logger.info("\n" + '\n'.join(report_lines))
-    logger.info(f"\nDetailed analysis saved to: {analysis_path}")
-    logger.info(f"Report saved to: {report_path}")
+    logger.info(f"\n📊 Analysis completed!")
+    logger.info(f"📄 Detailed results: {analysis_path}")
+    logger.info(f"📋 Summary report: {simple_report_path}")
+    logger.info(f"📊 JSON summary: {simple_json_path}")
     
     # Organize photos if requested
     if organize:
@@ -683,6 +795,130 @@ def process_photo_data(filepath: Path, exif_data: Dict[str, Any]) -> Optional[Di
     except Exception as e:
         logger.error(f"Error processing photo data for {filepath}: {e}")
         return None
+
+def create_simplified_report(analysis_data: Dict[str, Any], output_dir: Path) -> None:
+    """Create a simplified, more readable analysis report"""
+    
+    summary = analysis_data['summary']
+    category_comparison = analysis_data['category_comparison']
+    
+    # Create simplified report
+    report_lines = [
+        "📸 PHOTO ANALYSIS SUMMARY",
+        "=" * 50,
+        f"📅 Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
+        f"📁 Total Photos: {summary['total_files']:,}",
+        f"📅 Date Range: {summary['date_range']['start']} to {summary['date_range']['end']}",
+        "",
+        "📊 CATEGORY BREAKDOWN",
+        "-" * 30,
+    ]
+    
+    # Sort categories by count
+    sorted_categories = sorted(
+        summary['analyzed_categories'].items(), 
+        key=lambda x: x[1], 
+        reverse=True
+    )
+    
+    for category, count in sorted_categories:
+        percentage = (count / summary['total_files']) * 100
+        report_lines.append(f"  {category:<12} {count:>4} photos ({percentage:>5.1f}%)")
+    
+    # Add burst information if significant
+    if summary.get('burst_sequences', 0) > 0:
+        report_lines.extend([
+            "",
+            "🎯 BURST DETECTION",
+            "-" * 30,
+            f"  Burst Sequences: {summary['burst_sequences']}",
+            f"  Burst Photos: {summary['burst_photos']} ({summary['burst_photos']/summary['total_files']*100:.1f}%)"
+        ])
+    
+    # Add category changes summary
+    if category_comparison:
+        report_lines.extend([
+            "",
+            "🔄 CATEGORY CHANGES",
+            "-" * 30,
+        ])
+        
+        total_changes = 0
+        for current_cat, analyzed_cats in category_comparison.items():
+            changes = sum(count for analyzed_cat, count in analyzed_cats.items() 
+                         if analyzed_cat != current_cat)
+            if changes > 0:
+                total_changes += changes
+                report_lines.append(f"  {current_cat:<12} → {changes:>3} photos reclassified")
+        
+        if total_changes > 0:
+            change_percentage = (total_changes / summary['total_files']) * 100
+            report_lines.append(f"  Total Changes: {total_changes} ({change_percentage:.1f}%)")
+        else:
+            report_lines.append("  No category changes detected")
+    
+    # Add processing stats
+    if 'processing_stats' in summary:
+        stats = summary['processing_stats']
+        report_lines.extend([
+            "",
+            "⚙️ PROCESSING INFO",
+            "-" * 30,
+            f"  Cache Enabled: {'Yes' if stats.get('cache_enabled') else 'No'}",
+            f"  Workers: {stats.get('max_workers', 'N/A')}",
+            f"  Batch Size: {stats.get('batch_size', 'N/A')}"
+        ])
+    
+    # Save simplified report
+    simple_report_path = output_dir / 'analysis_summary.txt'
+    with open(simple_report_path, 'w') as f:
+        f.write('\n'.join(report_lines))
+    
+    # Also print to console
+    print('\n' + '\n'.join(report_lines))
+    
+    return simple_report_path
+
+def create_json_summary(analysis_data: Dict[str, Any], output_dir: Path) -> None:
+    """Create a simplified JSON summary with only essential data"""
+    
+    summary = analysis_data['summary']
+    
+    # Create simplified JSON structure
+    simple_summary = {
+        "metadata": {
+            "timestamp": datetime.now().isoformat(),
+            "total_photos": summary['total_files'],
+            "date_range": summary['date_range']
+        },
+        "categories": summary['analyzed_categories'],
+        "burst_info": {
+            "sequences": summary.get('burst_sequences', 0),
+            "photos": summary.get('burst_photos', 0)
+        },
+        "changes": {
+            "total_changes": 0,
+            "change_percentage": 0.0
+        }
+    }
+    
+    # Calculate changes
+    if 'category_comparison' in analysis_data:
+        total_changes = 0
+        for current_cat, analyzed_cats in analysis_data['category_comparison'].items():
+            changes = sum(count for analyzed_cat, count in analyzed_cats.items() 
+                         if analyzed_cat != current_cat)
+            total_changes += changes
+        
+        simple_summary["changes"]["total_changes"] = total_changes
+        simple_summary["changes"]["change_percentage"] = (total_changes / summary['total_files']) * 100
+    
+    # Save simplified JSON
+    simple_json_path = output_dir / 'analysis_summary.json'
+    with open(simple_json_path, 'w') as f:
+        json.dump(simple_summary, f, indent=2)
+    
+    return simple_json_path
 
 if __name__ == "__main__":
     import sys

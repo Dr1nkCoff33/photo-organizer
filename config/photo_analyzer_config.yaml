@@ -1,0 +1,58 @@
+# Photo Analyzer Configuration
+# This file allows you to customize the behavior of the EXIF photo analyzer
+
+# Performance settings
+max_workers: 8  # Number of parallel workers (default: CPU count + 4)
+batch_size: 50  # Number of files to process in each batch
+cache_enabled: true  # Enable EXIF data caching
+cache_dir: ~/.photo_analyzer_cache  # Cache directory
+progress_file: ~/.photo_analyzer_progress.json  # Progress tracking file
+
+# Category definitions with customizable parameters
+categories:
+  Portrait:
+    focal_range: [50, 135]  # Focal length range in mm
+    f_number_max: 2.8  # Maximum f-number for portrait detection
+    weight: 1.0  # Scoring weight multiplier
+    
+  Landscape:
+    focal_range: [0, 35]  # Focal length range in mm
+    f_number_min: 8  # Minimum f-number for landscape detection
+    weight: 1.0  # Scoring weight multiplier
+    
+  Street:
+    focal_range: [28, 50]  # Focal length range in mm
+    weight: 1.0  # Scoring weight multiplier
+    
+  Event:
+    burst_threshold: 5  # Minimum photos for burst detection
+    weight: 1.0  # Scoring weight multiplier
+    
+  Wildlife:
+    focal_range: [200, 999]  # Focal length range in mm
+    weight: 1.0  # Scoring weight multiplier
+    
+  Sports:
+    focal_range: [200, 999]  # Focal length range in mm
+    weight: 1.0  # Scoring weight multiplier
+    
+  Macro:
+    subject_distance_max: 50  # Maximum subject distance in cm
+    weight: 1.0  # Scoring weight multiplier
+    
+  Architecture:
+    focal_range: [0, 24]  # Focal length range in mm
+    weight: 1.0  # Scoring weight multiplier
+    
+  Night:
+    iso_min: 1600  # Minimum ISO for night detection
+    weight: 1.0  # Scoring weight multiplier
+
+# Example custom categories (uncomment to add)
+# custom_categories:
+#   Astrophotography:
+#     iso_min: 3200
+#     weight: 1.5
+#   Documentary:
+#     focal_range: [35, 85]
+#     weight: 1.2 
