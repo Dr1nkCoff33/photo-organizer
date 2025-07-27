@@ -14,23 +14,44 @@ Python-based RAW photo organization and analysis tool for photographers.
 
 ```
 photo-organizer/
-├── src/                    # Source code
-│   ├── analyze_photos.py   # Main photo analysis script
-│   ├── photo_processor.py  # Photo processing utilities
-│   └── utils/              # Utility functions
-├── data/                   # Photo data
-│   ├── raw/                # Raw photo files
-│   └── processed/          # Processed photo data
-├── output/                 # Analysis outputs
-│   ├── reports/            # Analysis reports
-│   └── organized/          # Organized photo collections
-├── requirements.txt
-├── config.py
-└── README.md
+├── src/                          # Source code
+│   ├── analyze_photos.py         # Basic photo analysis script
+│   ├── analyze_photos_exif.py    # Enhanced EXIF analyzer
+│   ├── cli.py                    # Command-line interface
+│   └── utils/                    # Utility functions
+│       ├── file_utils.py         # File operations
+│       ├── exif_utils.py         # EXIF data handling
+│       └── date_utils.py         # Date processing
+├── config/                       # Configuration files
+│   └── photo_analyzer_config.yaml
+├── data/                         # Photo data storage
+│   ├── raw/                      # Raw photo files
+│   └── processed/                # Processed photo data
+├── output/                       # Analysis outputs
+│   ├── analysis/                 # Analysis reports
+│   ├── exif_analysis/            # EXIF analysis results
+│   ├── organized/                # Organized photo collections
+│   └── reports/                  # General reports
+├── requirements.txt              # Python dependencies
+├── setup.py                      # Package installation
+├── Makefile                      # Development tasks
+├── config.py                     # Main configuration
+└── README.md                     # Project documentation
 ```
 
 ## Installation
 
+### Quick Setup
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/photo-organizer.git
+cd photo-organizer
+
+# Full setup (installs dependencies and exiftool)
+make setup
+```
+
+### Manual Setup
 1. Clone the repository:
 ```bash
 git clone https://github.com/yourusername/photo-organizer.git
@@ -42,44 +63,75 @@ cd photo-organizer
 pip install -r requirements.txt
 ```
 
-3. Set up configuration:
+3. Install exiftool (required for enhanced analysis):
 ```bash
-cp config.py.example config.py
-# Edit config.py with your preferences
+# macOS
+brew install exiftool
+
+# Ubuntu/Debian
+sudo apt-get install exiftool
+
+# Or use the make command
+make setup-exiftool
+```
+
+4. Set up configuration:
+```bash
+# Edit the configuration file as needed
+nano config/photo_analyzer_config.yaml
 ```
 
 ## Usage
 
-### Basic Photo Analysis
+### Command Line Interface
+
+The photo organizer provides a convenient CLI for all operations:
 
 ```bash
-# Analyze photos in a directory
-python src/analyze_photos.py --input-dir /path/to/photos --output-dir /path/to/output
+# Show help
+python -m src.cli --help
 
-# Analyze specific file types
-python src/analyze_photos.py --input-dir /path/to/photos --file-types ARW,CR2,NEF
+# Basic photo analysis
+python -m src.cli analyze /path/to/photos /path/to/output
+
+# Enhanced EXIF analysis
+python -m src.cli analyze-exif /path/to/photos /path/to/output
+
+# Organize photos by date and category
+python -m src.cli organize /path/to/photos /path/to/output --move
+
+# Use custom configuration
+python -m src.cli analyze-exif /path/to/photos /path/to/output --config config/custom.yaml
 ```
 
-### Batch Processing
+### Using Make Commands
+
+For convenience, you can use the provided Makefile:
 
 ```bash
-# Process multiple directories
-python src/analyze_photos.py --batch-file directories.txt
+# Show available commands
+make help
 
-# Process with specific options
-python src/analyze_photos.py --input-dir /path/to/photos --organize-by-date --detect-bursts
+# Run enhanced analysis
+make run-enhanced SOURCE_DIR=/path/to/photos OUTPUT_DIR=/path/to/output
+
+# Run organization
+make run-organize SOURCE_DIR=/path/to/photos OUTPUT_DIR=/path/to/output
+
+# Quick test with sample data
+make test-quick
 ```
 
 ### Python API
 
 ```python
-from src.analyze_photos import analyze_photo_sequence, categorize_photos
+from src.analyze_photos_exif import main, PhotoAnalyzerConfig
 
-# Analyze photo sequence
-bursts = analyze_photo_sequence(photos)
+# Load custom configuration
+config = PhotoAnalyzerConfig('config/photo_analyzer_config.yaml')
 
-# Categorize photos
-categories = categorize_photos(photos)
+# Run analysis
+result = main('/path/to/photos', '/path/to/output', 'config/photo_analyzer_config.yaml')
 ```
 
 ## Features

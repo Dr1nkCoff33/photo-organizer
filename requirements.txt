@@ -4,4 +4,9 @@ ExifRead>=3.0.0
 pandas>=1.5.0
 numpy>=1.24.0
 python-dateutil>=2.8.0
-pathlib2>=2.3.0 
+pathlib2>=2.3.0
+
+# Enhanced EXIF Analyzer Dependencies
+PyYAML>=6.0
+tqdm>=4.64.0
+psutil>=5.9.0  # For system monitoring 
