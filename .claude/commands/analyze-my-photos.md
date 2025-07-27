@@ -3,7 +3,7 @@
 ## Command: `/analyze-my-photos`
 
 ### Description
-Simple, one-command photo analysis for your specific directory structure. This command is optimized for your typical workflow and automatically handles all the Python script execution with exiftool and Claude AI integration.
+**Your main command for photo analysis** - Simple, powerful, and optimized for your personal workflow. This command handles everything from basic analysis to full Claude AI integration with automatic environment setup and intelligent defaults.
 
 ### Usage
 ```
@@ -20,10 +20,12 @@ Simple, one-command photo analysis for your specific directory structure. This c
 - `--clean`: Clean output before analysis
 - `--verbose`: Show detailed progress
 - `--config=path`: Use custom configuration file
+- `--sample=N`: Number of photos for Claude AI analysis (default: 20)
+- `--confidence=N`: Minimum confidence for category overrides (default: 8)
 
 ### Examples
 ```
-# Analyze photos with Claude AI (recommended)
+# Standard analysis with Claude AI (recommended)
 /analyze-my-photos /Users/carlosmartinez/Documents/2024-09-08 --claude
 
 # Full analysis with Claude AI and organization
@@ -32,7 +34,10 @@ Simple, one-command photo analysis for your specific directory structure. This c
 # Quick analysis without Claude AI
 /analyze-my-photos /Users/carlosmartinez/Documents/2024-09-08 --basic
 
-# Full analysis with custom config and file moving
+# Enhanced analysis with custom settings
+/analyze-my-photos /Users/carlosmartinez/Documents/2024-09-08 --claude --sample=30 --confidence=7 --verbose
+
+# Full analysis with file moving and custom config
 /analyze-my-photos /Users/carlosmartinez/Documents/2024-09-08 --claude --organize --move --config=config/enhanced_photo_analyzer_config.yaml --verbose
 ```
 
@@ -103,11 +108,11 @@ The analysis results will be saved to:
 
 ### Claude AI Integration
 When `--claude` is used:
-- **Sample Analysis**: Analyzes 20 sample photos by default
+- **Sample Analysis**: Analyzes 20 sample photos by default (configurable with --sample)
 - **Content Validation**: Validates EXIF-based categorizations
 - **Edge Case Handling**: Identifies photos that EXIF alone might miss
 - **Confidence Scoring**: Provides confidence levels for each categorization
-- **Category Overrides**: Can override EXIF categories with high confidence (8+)
+- **Category Overrides**: Can override EXIF categories with high confidence (configurable with --confidence)
 
 ### Error Handling
 - **Missing Directory**: Clear error message with suggestions
@@ -122,4 +127,41 @@ When `--claude` is used:
 - **Network Drives**: Consider copying to local drive first
 - **Memory**: Close other applications for very large collections
 - **Caching**: Subsequent runs will be faster due to caching
-- **Claude AI**: Sample analysis keeps processing time reasonable 
+- **Claude AI**: Sample analysis keeps processing time reasonable
+- **Custom Sampling**: Use `--sample=10` for faster analysis, `--sample=50` for higher accuracy
+
+### Sample Output
+```
+📸 Quick Photo Analysis
+📁 Source: /Users/carlosmartinez/Documents/2024-09-08
+📂 Output: /Users/carlosmartinez/Document/GitHub/photo-organizer/output/analysis
+🤖 Claude AI: Enabled
+📦 Organize: No
+--------------------------------------------------
+
+✅ Analysis Complete!
+📊 Total Photos: 225
+
+📈 Top Categories:
+  Event          170 photos ( 75.6%)
+  Street          40 photos ( 17.8%)
+  Landscape       14 photos (  6.2%)
+  Portrait         1 photos (  0.4%)
+
+🎯 Burst Sequences: 31
+
+🤖 Claude AI Analysis:
+  - 20 photos analyzed with Claude AI
+  - 3 category overrides applied
+  - Average confidence: 8.2/10
+  - Content validation: 95% accuracy
+
+📄 Results saved to: /Users/carlosmartinez/Document/GitHub/photo-organizer/output/analysis
+```
+
+### Why This Command?
+- **🎯 One Command Does Everything**: From basic analysis to full Claude AI integration
+- **🚀 Optimized for Your Workflow**: Designed specifically for your directory structure
+- **🤖 Smart Defaults**: Intelligent parameter selection based on your needs
+- **📊 Comprehensive Results**: Everything you need to know about your photos
+- **🔧 Easy to Use**: Simple parameters, clear output, helpful error messages 
