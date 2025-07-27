@@ -11,88 +11,98 @@
 ```
 
 ### Parameters
-- `directory`: Directory containing photos (e.g., /Users/carlosmartinez/Documents/2024-09-08)
+- `directory`: Directory containing photos (will prompt if not provided)
+- `output`: Output directory for results (will prompt if not provided)
 - `--claude`: Enable Claude AI content analysis (recommended)
 - `--enhanced`: Use enhanced EXIF analysis (default)
 - `--basic`: Use basic analysis (faster, no EXIF)
 - `--organize`: Organize photos by date and category
 - `--move`: Move files instead of copying
-- `--clean`: Clean output before analysis
 - `--verbose`: Show detailed progress
 - `--config=path`: Use custom configuration file
-- `--sample=N`: Number of photos for Claude AI analysis (default: 20)
+- `--sample=N`: Number of photos for Claude AI analysis (will prompt if not provided, default: 20)
 - `--confidence=N`: Minimum confidence for category overrides (default: 8)
 
 ### Examples
 ```
-# Standard analysis with Claude AI (recommended)
+# Standard analysis with Claude AI (will prompt for directories and sample size)
+/analyze-my-photos --claude
+
+# Specify source directory, prompt for output
 /analyze-my-photos /Users/carlosmartinez/Documents/2024-09-08 --claude
 
-# Full analysis with Claude AI and organization
-/analyze-my-photos /Users/carlosmartinez/Documents/2024-09-08 --claude --organize
+# Full analysis with all parameters
+/analyze-my-photos /Users/carlosmartinez/Documents/2024-09-08 /external/drive/photo-output --claude --organize
 
 # Quick analysis without Claude AI
-/analyze-my-photos /Users/carlosmartinez/Documents/2024-09-08 --basic
+/analyze-my-photos --basic
 
 # Enhanced analysis with custom settings
-/analyze-my-photos /Users/carlosmartinez/Documents/2024-09-08 --claude --sample=30 --confidence=7 --verbose
+/analyze-my-photos --claude --sample=30 --confidence=7 --verbose
 
 # Full analysis with file moving and custom config
-/analyze-my-photos /Users/carlosmartinez/Documents/2024-09-08 --claude --organize --move --config=config/enhanced_photo_analyzer_config.yaml --verbose
+/analyze-my-photos --claude --organize --move --config=config/enhanced_photo_analyzer_config.yaml --verbose
 ```
 
 ### Workflow
-1. **Environment Setup** - Source .env file and verify Claude API key
-2. **Path Validation** - Verify the directory exists and contains photos
-3. **ExifTool Check** - Ensure exiftool is available for enhanced analysis
-4. **Claude AI Setup** - Verify Claude API key and connectivity
-5. **Output Setup** - Create organized output directory structure
-6. **Script Execution** - Run the appropriate Python analysis script
-7. **Progress Monitoring** - Track analysis progress and handle errors
-8. **Results Summary** - Display analysis results and statistics
-9. **Organization** - Organize files if requested
+1. **Directory Prompts** - Ask for input/output directories if not provided
+2. **Sample Size Prompt** - Ask for Claude AI sample size if --claude is used
+3. **Environment Setup** - Source .env file and verify Claude API key
+4. **Path Validation** - Verify the directories exist
+5. **ExifTool Check** - Ensure exiftool is available for enhanced analysis
+6. **Claude AI Setup** - Verify Claude API key and connectivity
+7. **Script Execution** - Run the appropriate Python analysis script
+8. **Progress Monitoring** - Track analysis progress and handle errors
+9. **Results Summary** - Display analysis results and statistics
+10. **Organization** - Organize files if requested
 
 ### Python Script Execution
 The command automatically runs the appropriate Python scripts:
 
 **Recommended - Quick Analysis with Claude AI:**
 ```bash
-# Source environment and run quick analysis
+# Source environment and run quick analysis (prompts for output dir)
 source .env
 python -m src.quick_analyze [directory] --claude --organize
 ```
 
 **Enhanced Analysis with Claude AI:**
 ```bash
-# Source environment and run enhanced analysis
+# Source environment and run enhanced analysis (prompts for output dir)
 source .env
-python -m src.quick_analyze [directory] --claude --config config/enhanced_photo_analyzer_config.yaml --organize
+python -m src.quick_analyze [directory] --output-dir [output_directory] --claude --config config/enhanced_photo_analyzer_config.yaml --organize
 ```
 
 **Legacy Enhanced Analysis:**
 ```bash
-python -m src.cli analyze-exif [directory] /Users/carlosmartinez/Document/GitHub/photo-organizer/output/[directory_name] --organize --move
+python organize_photos.py [directory] --output-dir [output_directory] --organize --move
 ```
 
 **Basic Analysis:**
 ```bash
-python -m src.cli analyze [directory] /Users/carlosmartinez/Document/GitHub/photo-organizer/output/[directory_name]
+python organize_photos.py [directory] --output-dir [output_directory]
 ```
 
 ### Output Structure
-The analysis results will be saved to:
+The analysis results will be saved to your specified output directory:
 ```
-/Users/carlosmartinez/Document/GitHub/photo-organizer/output/[directory_name]/
+[your_output_directory]/
 ├── analysis_summary.txt          # Human-readable summary
 ├── analysis_summary.json         # Structured data
 ├── exif_analysis_results.json    # Detailed EXIF analysis
-├── organized/                    # Organized photos (if requested)
-│   ├── Portrait/
-│   ├── Landscape/
-│   ├── Event/
-│   └── Street/
-└── reports/
-    └── summary_report.txt
+└── organized/                    # Organized photos (if requested)
+    ├── Portrait/
+    │   └── 2024-09/
+    │       └── photo.ARW
+    ├── Landscape/
+    │   └── 2024-09/
+    │       └── photo.ARW
+    ├── Event/
+    │   └── 2024-09/
+    │       └── photo.ARW
+    └── Street/
+        └── 2024-09/
+            └── photo.ARW
 ```
 
 ### Expected Results
@@ -130,12 +140,29 @@ When `--claude` is used:
 - **Claude AI**: Sample analysis keeps processing time reasonable
 - **Custom Sampling**: Use `--sample=10` for faster analysis, `--sample=50` for higher accuracy
 
+### Interactive Prompts
+When directories or sample size are not provided, you'll see:
+
+```
+📂 Where are your photos located?
+   (Enter full path to photo directory)
+   Photo directory: /Users/carlosmartinez/Documents/2024-09-08
+
+📂 Where should I save the analysis results?
+   (Enter full path to output directory)
+   Output directory: /external/drive/photo-analysis/2024-09-08
+
+🤖 How many photos should Claude AI analyze?
+   (Enter number between 5-100, or press Enter for default: 20)
+   Sample size: 30
+```
+
 ### Sample Output
 ```
 📸 Quick Photo Analysis
 📁 Source: /Users/carlosmartinez/Documents/2024-09-08
-📂 Output: /Users/carlosmartinez/Document/GitHub/photo-organizer/output/analysis
-🤖 Claude AI: Enabled
+📂 Output: /external/drive/photo-analysis/2024-09-08
+🤖 Claude AI: Enabled (30 photo sample)
 📦 Organize: No
 --------------------------------------------------
 
@@ -151,12 +178,12 @@ When `--claude` is used:
 🎯 Burst Sequences: 31
 
 🤖 Claude AI Analysis:
-  - 20 photos analyzed with Claude AI
+  - 30 photos analyzed with Claude AI
   - 3 category overrides applied
   - Average confidence: 8.2/10
   - Content validation: 95% accuracy
 
-📄 Results saved to: /Users/carlosmartinez/Document/GitHub/photo-organizer/output/analysis
+📄 Results saved to: /external/drive/photo-analysis/2024-09-08
 ```
 
 ### Why This Command?

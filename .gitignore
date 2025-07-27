@@ -55,36 +55,41 @@ Thumbs.db
 *.log
 logs/
 
-# Photo files (large files)
-data/raw/*.ARW
-data/raw/*.CR2
-data/raw/*.NEF
-data/raw/*.RAF
-data/raw/*.ORF
-data/raw/*.RW2
-data/raw/*.PEF
-data/raw/*.SRW
-data/raw/*.DNG
-data/raw/*.JPG
-data/raw/*.JPEG
-data/raw/*.PNG
-data/raw/*.TIFF
-data/raw/*.TIF
+# Photo files - keep all output outside the repo
+*.ARW
+*.CR2
+*.NEF
+*.RAF
+*.ORF
+*.RW2
+*.PEF
+*.SRW
+*.DNG
+*.JPG
+*.JPEG
+*.PNG
+*.TIFF
+*.TIF
 
-# Processed data
-data/processed/*.json
-data/processed/*.csv
-output/reports/*.json
-output/reports/*.csv
+# Output and data directories
+output/
+data/
+organized_photos/
+analysis_results/
+exif_analysis/
+
+# Analysis results
+*analysis_results.json
+*analysis_report.txt
+*analysis_summary.json
+*analysis_summary.txt
 
 # Configuration
-config.py
 secrets.json
+config/local_config.yaml
 
 # Temporary files
 *.tmp
 *.temp
 temp/
-tmp/ .env
-output/*
-!output/README.md
+tmp/

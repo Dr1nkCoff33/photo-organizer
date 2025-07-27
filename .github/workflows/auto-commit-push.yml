@@ -1,0 +1,67 @@
+name: Auto Commit and Push
+
+on:
+  workflow_dispatch:
+    inputs:
+      commit_message:
+        description: 'Commit message'
+        required: true
+        default: 'Auto commit changes'
+      branch:
+        description: 'Branch to push to'
+        required: true
+        default: 'main'
+  push:
+    branches: [ main, develop ]
+    paths-ignore:
+      - '**.md'
+      - '.github/**'
+
+jobs:
+  auto-commit-push:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        token: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Configure Git
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+    
+    - name: Add all changes
+      run: |
+        git add .
+        echo "Added all changes to staging"
+    
+    - name: Check for changes
+      id: check_changes
+      run: |
+        if [[ -n "$(git status --porcelain)" ]]; then
+          echo "has_changes=true" >> $GITHUB_OUTPUT
+          echo "Changes detected, proceeding with commit"
+        else
+          echo "has_changes=false" >> $GITHUB_OUTPUT
+          echo "No changes to commit"
+        fi
+    
+    - name: Commit changes
+      if: steps.check_changes.outputs.has_changes == 'true'
+      run: |
+        git commit -m "${{ github.event.inputs.commit_message || 'Auto commit changes' }}"
+        echo "Committed changes"
+    
+    - name: Push changes
+      if: steps.check_changes.outputs.has_changes == 'true'
+      run: |
+        git push origin ${{ github.event.inputs.branch || 'main' }}
+        echo "Pushed changes to ${{ github.event.inputs.branch || 'main' }}"
+    
+    - name: No changes message
+      if: steps.check_changes.outputs.has_changes == 'false'
+      run: |
+        echo "No changes to commit or push"

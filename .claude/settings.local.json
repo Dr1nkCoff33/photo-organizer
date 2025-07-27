@@ -11,7 +11,8 @@
       "Bash(for i in {650..679})",
       "Bash(for i in {482..509})",
       "Bash(for i in {680..706})",
-      "Bash(python:*)"
+      "Bash(python:*)",
+      "Bash(find:*)"
     ],
     "deny": []
   }

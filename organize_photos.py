@@ -17,18 +17,18 @@ if __name__ == "__main__":
         epilog="""
 Examples:
   # Analyze and organize photos (copy mode)
-  python organize_photos.py /path/to/photos /path/to/output --organize
+  python organize_photos.py /path/to/photos --organize
   
   # Analyze and move photos into organized folders
-  python organize_photos.py /path/to/photos /path/to/output --organize --move
+  python organize_photos.py /path/to/photos --organize --move
   
   # Just analyze without organizing
-  python organize_photos.py /path/to/photos /path/to/output
+  python organize_photos.py /path/to/photos
         """
     )
     
     parser.add_argument('source_dir', help='Directory containing RAW photos to organize')
-    parser.add_argument('output_dir', help='Output directory for organized photos')
+    parser.add_argument('--output-dir', help='Output directory for organized photos')
     parser.add_argument('--organize', action='store_true', 
                       help='Actually organize photos into folders (default: just analyze)')
     parser.add_argument('--move', action='store_true', 
@@ -36,6 +36,16 @@ Examples:
     parser.add_argument('--config', help='Path to configuration YAML file')
     
     args = parser.parse_args()
+    
+    # Prompt for output directory if not provided
+    if not args.output_dir:
+        print("\n📂 Where should I save the analysis results?")
+        print("   (Enter full path to output directory)")
+        output_path = input("   Output directory: ").strip()
+        if not output_path:
+            print("❌ Output directory is required")
+            sys.exit(1)
+        args.output_dir = output_path
     
     # Default to organizing if not just analyzing
     if not args.organize:

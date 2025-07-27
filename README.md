@@ -1,180 +1,157 @@
 # Photo Organizer
 
-Python-based RAW photo organization and analysis tool for photographers.
+A fast Python tool that organizes your RAW photos by analyzing their EXIF data. It automatically sorts photos into categories like Portrait, Landscape, Street, and Event based on how you actually shot them.
 
-## Features
+## What It Does
 
-- **RAW Photo Analysis**: Automated analysis of RAW photo files
-- **Date-based Organization**: Intelligent sorting by capture date
-- **Burst Detection**: Automatic detection and grouping of photo sequences
-- **Content Categorization**: Smart categorization based on photo content
-- **Batch Processing**: Efficient processing of large photo collections
+This tool reads the metadata from your RAW photos (like focal length, aperture, and shooting mode) to figure out what type of photo it is. Then it organizes them into folders by category and date.
 
-## Project Structure
+**Key Features:**
+- Analyzes EXIF data to categorize photos correctly
+- Detects burst sequences and groups them as events
+- Organizes photos by category and date
+- Optionally uses Claude AI to verify categories
+- Processes thousands of photos in minutes
 
-```
-photo-organizer/
-├── src/                          # Source code
-│   ├── analyze_photos.py         # Basic photo analysis script
-│   ├── analyze_photos_exif.py    # Enhanced EXIF analyzer
-│   ├── cli.py                    # Command-line interface
-│   └── utils/                    # Utility functions
-│       ├── file_utils.py         # File operations
-│       ├── exif_utils.py         # EXIF data handling
-│       └── date_utils.py         # Date processing
-├── config/                       # Configuration files
-│   └── photo_analyzer_config.yaml
-├── data/                         # Photo data storage
-│   ├── raw/                      # Raw photo files
-│   └── processed/                # Processed photo data
-├── output/                       # Analysis outputs
-│   ├── analysis/                 # Analysis reports
-│   ├── exif_analysis/            # EXIF analysis results
-│   ├── organized/                # Organized photo collections
-│   └── reports/                  # General reports
-├── requirements.txt              # Python dependencies
-├── setup.py                      # Package installation
-├── Makefile                      # Development tasks
-├── config.py                     # Main configuration
-└── README.md                     # Project documentation
-```
+## Quick Start
 
-## Installation
+### Install Requirements
 
-### Quick Setup
-```bash
-# Clone the repository
-git clone https://github.com/yourusername/photo-organizer.git
-cd photo-organizer
-
-# Full setup (installs dependencies and exiftool)
-make setup
-```
-
-### Manual Setup
-1. Clone the repository:
-```bash
-git clone https://github.com/yourusername/photo-organizer.git
-cd photo-organizer
-```
-
-2. Install Python dependencies:
+1. Install Python dependencies:
 ```bash
 pip install -r requirements.txt
 ```
 
-3. Install exiftool (required for enhanced analysis):
+2. Install ExifTool:
 ```bash
-# macOS
+# Mac
 brew install exiftool
 
-# Ubuntu/Debian
+# Linux
 sudo apt-get install exiftool
-
-# Or use the make command
-make setup-exiftool
 ```
 
-4. Set up configuration:
-```bash
-# Edit the configuration file as needed
-nano config/photo_analyzer_config.yaml
-```
+### Basic Usage
 
-## Usage
-
-### Command Line Interface
-
-The photo organizer provides a convenient CLI for all operations:
+The tool will always ask you where to save the results:
 
 ```bash
-# Show help
-python -m src.cli --help
+# Just analyze photos
+python organize_photos.py /path/to/your/photos
 
-# Basic photo analysis
-python -m src.cli analyze /path/to/photos /path/to/output
+# Analyze and organize into folders
+python organize_photos.py /path/to/your/photos --organize
 
-# Enhanced EXIF analysis
-python -m src.cli analyze-exif /path/to/photos /path/to/output
-
-# Organize photos by date and category
-python -m src.cli organize /path/to/photos /path/to/output --move
-
-# Use custom configuration
-python -m src.cli analyze-exif /path/to/photos /path/to/output --config config/custom.yaml
+# Use the quick analyzer
+python -m src.quick_analyze /path/to/your/photos
 ```
 
-### Using Make Commands
+### Using Claude AI
 
-For convenience, you can use the provided Makefile:
+For better accuracy, you can use Claude AI to verify photo categories:
 
+1. Get an API key from [Anthropic](https://console.anthropic.com/)
+2. Set the environment variable:
 ```bash
-# Show available commands
-make help
-
-# Run enhanced analysis
-make run-enhanced SOURCE_DIR=/path/to/photos OUTPUT_DIR=/path/to/output
-
-# Run organization
-make run-organize SOURCE_DIR=/path/to/photos OUTPUT_DIR=/path/to/output
-
-# Quick test with sample data
-make test-quick
+export CLAUDE_API_KEY="your-api-key-here"
+```
+3. Run with Claude:
+```bash
+python -m src.quick_analyze /path/to/your/photos --claude
 ```
 
-### Python API
+## How Categories Work
 
-```python
-from src.analyze_photos_exif import main, PhotoAnalyzerConfig
+The tool looks at your camera settings to determine photo types:
 
-# Load custom configuration
-config = PhotoAnalyzerConfig('config/photo_analyzer_config.yaml')
-
-# Run analysis
-result = main('/path/to/photos', '/path/to/output', 'config/photo_analyzer_config.yaml')
-```
-
-## Features
-
-### Photo Analysis
-- **File Information**: Extract metadata, dates, and file properties
-- **Sequence Detection**: Identify burst shots and photo sequences
-- **Content Analysis**: Analyze photo content for categorization
-
-### Organization
-- **Date-based Sorting**: Organize by capture date
-- **Burst Grouping**: Group related photos together
-- **Category Classification**: Sort by content type
-
-### Output Formats
-- **JSON Reports**: Detailed analysis reports
-- **Organized Folders**: Structured photo collections
-- **Summary Statistics**: Overview of photo collection
-
-## Dependencies
-
-- Python 3.8+
-- PIL/Pillow for image processing
-- ExifRead for metadata extraction
-- pandas for data analysis
-- numpy for numerical operations
+**Portrait** - Medium telephoto (50-135mm), wide aperture (f/2.8 or wider)
+**Landscape** - Wide angle (0-35mm), narrow aperture (f/8 or smaller)  
+**Street** - Standard focal length (28-50mm), medium aperture
+**Event** - Burst sequences (5+ photos within 1 second)
+**Wildlife/Sports** - Long telephoto (200mm+), fast shutter speed
+**Architecture** - Ultra-wide (0-24mm), medium aperture
+**Macro** - Macro lens or very close focus distance
+**Night** - High ISO (1600+) or night scene mode
 
 ## Configuration
 
-Edit `config.py` to customize:
-- File type filters
-- Date format preferences
-- Output directory structure
-- Analysis parameters
+You can customize settings in `config/enhanced_photo_analyzer_config.yaml`:
 
-## Contributing
+```yaml
+# Performance settings
+max_workers: 8        # Parallel processing threads
+batch_size: 50        # Files processed per batch
+cache_enabled: true   # Cache EXIF data for speed
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
+# Category settings
+categories:
+  Portrait:
+    focal_range: [50, 135]
+    f_number_max: 2.8
+    confidence_threshold: 3.0
+```
+
+## Output Structure
+
+When you organize photos, they'll be sorted like this:
+
+```
+your_output_folder/
+├── Portrait/
+│   └── 2024-09/
+│       └── 20240908-IMG_001.ARW
+├── Landscape/
+│   └── 2024-09/
+│       └── 20240908-IMG_002.ARW
+├── Event/
+│   └── 2024-09/
+│       └── [burst sequences]
+├── analysis_summary.txt      # Human-readable summary
+├── analysis_summary.json     # Simple JSON data
+└── exif_analysis_results.json # Detailed analysis data
+```
+
+## Command Options
+
+**organize_photos.py:**
+- `source_dir` - Your photo folder (required)
+- `--organize` - Sort photos into category folders
+- `--move` - Move files instead of copying (use carefully!)
+- `--config` - Use a custom config file
+
+**quick_analyze.py:**
+- `source_dir` - Your photo folder (required)
+- `--output-dir` - Where to save results (will prompt if not provided)
+- `--claude` - Use Claude AI for better accuracy
+- `--organize` - Sort photos after analysis
+- `--config` - Use a custom config file
+
+## Performance
+
+On a modern computer:
+- 1,000 photos: 2-3 minutes
+- 5,000 photos: 8-12 minutes  
+- 10,000 photos: 15-25 minutes
+
+With Claude AI enabled, add about 2-3x more time.
+
+## Tips
+
+1. **First Time**: Try analyzing without organizing to see the results first
+2. **Large Collections**: The tool handles 10,000+ photos efficiently
+3. **Storage**: Keep your photos on a fast SSD for best performance
+4. **Backups**: Always backup before using `--move` option
+
+## Troubleshooting
+
+**"exiftool not found"** - Install it with `brew install exiftool` (Mac) or `apt-get install exiftool` (Linux)
+
+**Claude API errors** - Check your API key is set correctly with `echo $CLAUDE_API_KEY`
+
+**Slow performance** - Enable caching in the config file and use an SSD
+
+**Memory errors** - Reduce `batch_size` in the config file
 
 ## License
 
-MIT License 
+MIT License

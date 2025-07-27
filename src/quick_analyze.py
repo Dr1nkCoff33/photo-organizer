@@ -19,8 +19,15 @@ def quick_analyze(source_dir: str,
                  organize: bool = False) -> None:
     """Quick analysis with minimal output"""
     
+    # Always prompt for output directory if not provided
     if output_dir is None:
-        output_dir = Path(source_dir).parent / "analysis_output"
+        print("\n📂 Where should I save the analysis results?")
+        print("   (Enter full path to output directory)")
+        output_path = input("   Output directory: ").strip()
+        if not output_path:
+            print("❌ Output directory is required")
+            sys.exit(1)
+        output_dir = Path(output_path)
     else:
         output_dir = Path(output_dir)
     

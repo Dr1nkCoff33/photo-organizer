@@ -1,33 +1,38 @@
-# Claude Configuration for Career Workspace
+# Claude Configuration for Photo Organizer
 
 ## Default Behavior
-- All output files should be saved to `/Users/carlosmartinez/Document/GitHub/Career/output/`
-- Use subdirectories: `analysis/`, `reports/`, `exports/`, `temp/`
-- Follow naming convention: `[company]_[role]_[type]_[YYYYMMDD].[ext]`
+- Always prompt for input and output directories
+- Never save output files inside the repository
+- Ask for Claude AI sample size when --claude flag is used
+- Use external directories for all photo storage and analysis results
 
 ## Available Commands
-- `/analyze-job` - Comprehensive job posting analysis
-- `/optimize-resume` - Tailor resume for specific role
-- `/gap-analysis` - Skills gap analysis for target role
+- `/analyze-my-photos` - Main photo analysis command with EXIF and Claude AI
+- `/claude-photo-analysis` - Direct Claude AI photo analysis
+- `/project-setup` - Setup and configuration help
 
 ## Key Directories
-- **Resume/**: Source resume files
-- **Job-Roles/**: Target job descriptions
-- **Tools/**: Analysis scripts
-- **agents/**: Enhanced analysis agents
-- **workflows/**: Standardized processes
-- **output/**: All generated documents
+- **src/**: Source code for analysis scripts
+- **config/**: Configuration files (YAML)
+- **.claude/**: Command definitions and settings
+- **NO output/** directory - all outputs go to user-specified locations
 
-## Analysis Priorities
-1. Match percentage calculation
-2. Skills alignment
-3. Gap identification
-4. Actionable recommendations
-5. ATS optimization
+## Interactive Prompts
+When running commands without full parameters:
+1. Ask for photo source directory
+2. Ask for output directory  
+3. Ask for Claude AI sample size (if using --claude)
+4. Confirm settings before proceeding
+
+## Analysis Options
+- EXIF-based categorization (default)
+- Claude AI content validation (optional)
+- Burst sequence detection
+- Date-based organization
+- Category-based sorting
 
 ## Output Standards
-- Use markdown format
-- Include quantitative metrics
-- Provide actionable insights
-- Reference specific experiences
-- Save all outputs to designated directories
+- Save all files to user-specified directories
+- Never commit photos or analysis results to git
+- Use clear folder structure: Category/YYYY-MM/filename
+- Generate both human-readable and JSON summaries
