@@ -1,0 +1,23 @@
+# Local Configuration File
+# This file is for local settings and should NOT be committed to git
+# Add this file to .gitignore to keep your API keys secure
+
+# Claude AI Configuration
+claude_api:
+  api_key: "sk-ant-api03-your-actual-key-here"  # Replace with your actual API key
+  model: "claude-3-sonnet-20240229"
+  enabled: true
+  sample_size: 20
+  confidence_threshold: 8
+
+# Performance Settings (override defaults)
+performance:
+  max_workers: 8
+  batch_size: 50
+  cache_enabled: true
+
+# Output Settings
+output:
+  create_simplified_report: true
+  create_json_summary: true
+  include_claude_analysis: true 

@@ -85,4 +85,6 @@ secrets.json
 *.tmp
 *.temp
 temp/
-tmp/ 
+tmp/ .env
+output/*
+!output/README.md
