@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mv:*)",
+      "Bash(ls:*)",
+      "Bash(mkdir:*)",
+      "Bash(exiftool:*)",
+      "Bash(for i in {510..549})",
+      "Bash(do [ -f \"20240908-CVR00$i.ARW\" ])",
+      "Bash(done)",
+      "Bash(for i in {650..679})",
+      "Bash(for i in {482..509})",
+      "Bash(for i in {680..706})",
+      "Bash(python:*)"
+    ],
+    "deny": []
+  }
+}
