@@ -20,7 +20,7 @@
 ## Interactive Prompts
 When running commands without full parameters:
 1. Ask for photo source directory
-2. Ask for output directory  
+2. Ask for output directory
 3. Ask for Claude AI sample size (if using --claude)
 4. Confirm settings before proceeding
 

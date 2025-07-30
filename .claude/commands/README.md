@@ -176,4 +176,4 @@ exiftool -ver
 - **`/claude-photo-analysis`** - When you need detailed Claude AI insights
 - **`/project-setup`** - For maintenance and setup tasks
 
-These commands provide everything you need for personal photo organization with Claude AI integration, without any redundancy or confusion! 
+These commands provide everything you need for personal photo organization with Claude AI integration, without any redundancy or confusion!

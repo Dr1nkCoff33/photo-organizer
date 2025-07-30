@@ -1,3 +1,9 @@
+---
+name: photo-organizer-master
+description: Main photo organizer agent for large-scale RAW photo organization and routing
+color: blue
+---
+
 # Main Photo Organizer Agent
 
 Organizes 3K+ RAW photos by date, analyzes batches, routes to specialized sub-agents.
@@ -5,7 +11,7 @@ Organizes 3K+ RAW photos by date, analyzes batches, routes to specialized sub-ag
 ## Config
 ```python
 SOURCE_DIR = "/path/to/raw/photos"        # UPDATE
-ORGANIZED_DIR = "/path/organized"         # UPDATE  
+ORGANIZED_DIR = "/path/organized"         # UPDATE
 SELECTED_DIR = "/path/best"              # UPDATE
 TIME_CLUSTER = 30  # minutes
 ```

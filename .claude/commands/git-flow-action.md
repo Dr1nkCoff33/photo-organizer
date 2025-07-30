@@ -1,3 +1,9 @@
+---
+allowed-tools: Bash, Read, Edit, Grep, Glob
+description: Automates git commits and pushes with configurable messages
+argument-hint: [commit_message] [--branch=main]
+---
+
 # Git Flow Action
 
 Automates git commits and pushes with configurable commit messages and branch selection.
@@ -45,24 +51,24 @@ on:
 jobs:
   auto-commit-push:
     runs-on: ubuntu-latest
-    
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
       with:
         fetch-depth: 0
         token: ${{ secrets.GITHUB_TOKEN }}
-    
+
     - name: Configure Git
       run: |
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
-    
+
     - name: Add all changes
       run: |
         git add .
         echo "Added all changes to staging"
-    
+
     - name: Check for changes
       id: check_changes
       run: |
@@ -73,19 +79,19 @@ jobs:
           echo "has_changes=false" >> $GITHUB_OUTPUT
           echo "No changes to commit"
         fi
-    
+
     - name: Commit changes
       if: steps.check_changes.outputs.has_changes == 'true'
       run: |
         git commit -m "${{ github.event.inputs.commit_message || 'Auto commit changes' }}"
         echo "Committed changes"
-    
+
     - name: Push changes
       if: steps.check_changes.outputs.has_changes == 'true'
       run: |
         git push origin ${{ github.event.inputs.branch || 'main' }}
         echo "Pushed changes to ${{ github.event.inputs.branch || 'main' }}"
-    
+
     - name: No changes message
       if: steps.check_changes.outputs.has_changes == 'false'
       run: |

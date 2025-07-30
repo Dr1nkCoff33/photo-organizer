@@ -1,3 +1,9 @@
+---
+allowed-tools: Bash, Read, Edit, Grep, Glob, WebFetch
+description: Main command for photo analysis with EXIF and optional Claude AI integration
+argument-hint: [directory] [--claude] [--organize] [--sample=N] [--verbose]
+---
+
 # Analyze My Photos Command
 
 ## Command: `/analyze-my-photos`
@@ -191,4 +197,4 @@ When directories or sample size are not provided, you'll see:
 - **🚀 Optimized for Your Workflow**: Designed specifically for your directory structure
 - **🤖 Smart Defaults**: Intelligent parameter selection based on your needs
 - **📊 Comprehensive Results**: Everything you need to know about your photos
-- **🔧 Easy to Use**: Simple parameters, clear output, helpful error messages 
+- **🔧 Easy to Use**: Simple parameters, clear output, helpful error messages

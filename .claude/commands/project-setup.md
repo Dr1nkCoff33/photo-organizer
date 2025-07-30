@@ -1,3 +1,9 @@
+---
+allowed-tools: Bash, Read, Edit, Grep, Glob
+description: Complete project setup and environment configuration for the photo organizer
+argument-hint: [--fresh] [--dev] [--exiftool] [--config=path] [--test]
+---
+
 # Project Setup Command
 
 ## Command: `/setup-project`
@@ -71,4 +77,4 @@ cp config/photo_analyzer_config.yaml config/custom_config.yaml
 - Installed dependencies list
 - Configuration file locations
 - Next steps for usage
-- Troubleshooting information if needed 
+- Troubleshooting information if needed

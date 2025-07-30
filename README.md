@@ -1,6 +1,6 @@
 # Photo Organizer
 
-A fast Python tool that organizes your RAW photos by analyzing their EXIF data. It automatically sorts photos into categories like Portrait, Landscape, Street, and Event based on how you actually shot them.
+A Claude Code workflow for organizing RAW photos by analyzing their EXIF data. Uses Claude's built-in photo-organizer-raw agent to automatically sort photos into categories like Portrait, Landscape, Street, and Event based on how you actually shot them.
 
 ## What It Does
 
@@ -15,49 +15,31 @@ This tool reads the metadata from your RAW photos (like focal length, aperture, 
 
 ## Quick Start
 
-### Install Requirements
+### No Installation Required!
 
-1. Install Python dependencies:
+Claude Code has everything built-in. Just run:
+
 ```bash
-pip install -r requirements.txt
+# Basic organization
+claude "Organize my RAW photos from /Volumes/SDCard/DCIM"
+
+# With specific output location
+claude "Organize photos from /Volumes/SDCard/DCIM to ~/Pictures/Organized"
+
+# Analysis only (no file moving)
+claude "Analyze EXIF data from /path/to/photos and create a report"
 ```
 
-2. Install ExifTool:
-```bash
-# Mac
-brew install exiftool
+### Advanced Categorization
 
-# Linux
-sudo apt-get install exiftool
-```
-
-### Basic Usage
-
-The tool will always ask you where to save the results:
+Claude automatically analyzes EXIF data and can create custom categories:
 
 ```bash
-# Just analyze photos
-python organize_photos.py /path/to/your/photos
+# Custom categories based on your shooting style
+claude "Analyze my photos and categorize by focal length, aperture, and shooting patterns"
 
-# Analyze and organize into folders
-python organize_photos.py /path/to/your/photos --organize
-
-# Use the quick analyzer
-python -m src.quick_analyze /path/to/your/photos
-```
-
-### Using Claude AI
-
-For better accuracy, you can use Claude AI to verify photo categories:
-
-1. Get an API key from [Anthropic](https://console.anthropic.com/)
-2. Set the environment variable:
-```bash
-export CLAUDE_API_KEY="your-api-key-here"
-```
-3. Run with Claude:
-```bash
-python -m src.quick_analyze /path/to/your/photos --claude
+# With facial detection
+claude "Organize photos and group portraits with detected faces"
 ```
 
 ## How Categories Work
@@ -65,7 +47,7 @@ python -m src.quick_analyze /path/to/your/photos --claude
 The tool looks at your camera settings to determine photo types:
 
 **Portrait** - Medium telephoto (50-135mm), wide aperture (f/2.8 or wider)
-**Landscape** - Wide angle (0-35mm), narrow aperture (f/8 or smaller)  
+**Landscape** - Wide angle (0-35mm), narrow aperture (f/8 or smaller)
 **Street** - Standard focal length (28-50mm), medium aperture
 **Event** - Burst sequences (5+ photos within 1 second)
 **Wildlife/Sports** - Long telephoto (200mm+), fast shutter speed
@@ -73,23 +55,13 @@ The tool looks at your camera settings to determine photo types:
 **Macro** - Macro lens or very close focus distance
 **Night** - High ISO (1600+) or night scene mode
 
-## Configuration
+## How It Works
 
-You can customize settings in `config/enhanced_photo_analyzer_config.yaml`:
-
-```yaml
-# Performance settings
-max_workers: 8        # Parallel processing threads
-batch_size: 50        # Files processed per batch
-cache_enabled: true   # Cache EXIF data for speed
-
-# Category settings
-categories:
-  Portrait:
-    focal_range: [50, 135]
-    f_number_max: 2.8
-    confidence_threshold: 3.0
-```
+Claude Code's `photo-organizer-raw` agent:
+1. Reads EXIF metadata from all RAW files
+2. Analyzes shooting patterns (focal length, aperture, ISO)
+3. Detects burst sequences for events
+4. Organizes photos into categorized folders by date
 
 ## Output Structure
 
@@ -111,26 +83,27 @@ your_output_folder/
 └── exif_analysis_results.json # Detailed analysis data
 ```
 
-## Command Options
+## Example Commands
 
-**organize_photos.py:**
-- `source_dir` - Your photo folder (required)
-- `--organize` - Sort photos into category folders
-- `--move` - Move files instead of copying (use carefully!)
-- `--config` - Use a custom config file
+```bash
+# From SD card to organized folders
+claude "Organize RAW photos from /Volumes/SDCard/DCIM"
 
-**quick_analyze.py:**
-- `source_dir` - Your photo folder (required)
-- `--output-dir` - Where to save results (will prompt if not provided)
-- `--claude` - Use Claude AI for better accuracy
-- `--organize` - Sort photos after analysis
-- `--config` - Use a custom config file
+# Custom categories
+claude "Create categories for wildlife, macro, and architecture photos"
+
+# Analysis report only
+claude "Generate EXIF analysis report for my photo collection"
+
+# Specific date range
+claude "Organize photos from January 2024 only"
+```
 
 ## Performance
 
 On a modern computer:
 - 1,000 photos: 2-3 minutes
-- 5,000 photos: 8-12 minutes  
+- 5,000 photos: 8-12 minutes
 - 10,000 photos: 15-25 minutes
 
 With Claude AI enabled, add about 2-3x more time.
@@ -142,15 +115,10 @@ With Claude AI enabled, add about 2-3x more time.
 3. **Storage**: Keep your photos on a fast SSD for best performance
 4. **Backups**: Always backup before using `--move` option
 
-## Troubleshooting
+## See Also
 
-**"exiftool not found"** - Install it with `brew install exiftool` (Mac) or `apt-get install exiftool` (Linux)
-
-**Claude API errors** - Check your API key is set correctly with `echo $CLAUDE_API_KEY`
-
-**Slow performance** - Enable caching in the config file and use an SSD
-
-**Memory errors** - Reduce `batch_size` in the config file
+- [CLAUDE_WORKFLOW.md](CLAUDE_WORKFLOW.md) - Detailed workflow guide
+- [Claude Code Documentation](https://docs.anthropic.com/en/docs/claude-code)
 
 ## License
 
