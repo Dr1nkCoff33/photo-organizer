@@ -6,68 +6,89 @@
 Your SD card will typically mount at:
 - `/Volumes/[CARD_NAME]/DCIM/` (macOS)
 
-### 2. Use Claude Code to Analyze and Organize
+### 2. Use the Unified Photo Analyze Command
 
-Simply run one of these commands:
+Choose your analysis mode based on needs:
 
 ```bash
-# Basic organization by date and EXIF analysis
-claude "Organize my RAW photos from /Volumes/SDCard/DCIM"
+# Enhanced analysis (default) - Best for most cases
+/photo-analyze /Volumes/SDCard/DCIM
 
-# With specific categorization
-claude "Use the photo-organizer-raw agent to analyze photos in /Volumes/SDCard/DCIM and categorize them by:
-- Portrait (50-135mm focal length)
-- Landscape (wide angle)
-- Street photography
-- Event/burst sequences
-Then organize them into folders by category and date"
+# Quick analysis - For large collections or quick overview
+/photo-analyze /Volumes/SDCard/DCIM --mode=quick
+
+# Claude AI analysis - For maximum accuracy
+/photo-analyze /Volumes/SDCard/DCIM --mode=claude --organize
 
 # Custom output location
-claude "Organize photos from /Volumes/SDCard/DCIM to ~/Pictures/Organized with EXIF categorization"
+/photo-analyze /Volumes/SDCard/DCIM --output=~/Pictures/Organized --organize
 ```
 
-### 3. What Claude Code Will Do
+### 3. What Each Mode Does
 
-The built-in `photo-organizer-raw` agent will:
-1. **Read EXIF data** from all RAW files (ARW, CR2, NEF, etc.)
-2. **Analyze metadata**:
-   - Focal length for composition type
-   - Aperture for depth of field
-   - ISO and shutter speed
-   - Burst sequences for events
-3. **Categorize photos** based on shooting patterns
-4. **Organize files** into a structure like:
-   ```
-   Output/
-   ├── Portrait/
-   │   └── 2024-01/
-   ├── Landscape/
-   │   └── 2024-01/
-   ├── Street/
-   │   └── 2024-01/
-   └── Events/
-       └── 2024-01/
-   ```
+#### Quick Mode
+- **Speed**: 1-2 min per 1000 photos
+- **Analysis**: Basic EXIF extraction
+- **Best for**: Initial surveys, large collections
+
+#### Enhanced Mode (Default)
+- **Speed**: 3-5 min per 1000 photos  
+- **Analysis**: Full EXIF + burst detection
+- **Best for**: Most photo organization tasks
+
+#### Claude Mode
+- **Speed**: 10-15 min per 1000 photos
+- **Analysis**: Enhanced + AI content validation
+- **Best for**: Maximum accuracy, important collections
+
+### 4. Output Structure
+```
+Output/
+├── Portrait/
+│   └── 2024-01/
+├── Landscape/
+│   └── 2024-01/
+├── Street/
+│   └── 2024-01/
+├── Event/
+│   └── 2024-01/
+├── analysis_summary.txt
+├── analysis_summary.json
+└── exif_analysis_results.json
+```
 
 ## Advanced Usage
 
-### Custom Categories
-```bash
-claude "Analyze my photos and create custom categories based on:
-- Wildlife (telephoto >200mm)
-- Macro (close focus distance)
-- Architecture (ultra-wide <24mm)
-- Night photography (high ISO)"
-```
+### Mode Selection Guidelines
 
-### Analysis Only (No Moving Files)
-```bash
-claude "Analyze EXIF data from /Volumes/SDCard/DCIM and create a report without moving files"
-```
+**Use Quick Mode when:**
+- Processing 10,000+ photos
+- Need a fast overview
+- Limited time available
+- Initial collection survey
 
-### Facial Detection
+**Use Enhanced Mode when:**
+- Standard photo organization
+- Balanced speed/accuracy needed
+- Processing 1,000-5,000 photos
+- Default choice for most tasks
+
+**Use Claude Mode when:**
+- Maximum accuracy required
+- Difficult to categorize photos
+- Important collections
+- Content validation needed
+
+### Custom Parameters
 ```bash
-claude "Organize photos and group those with detected faces into a separate folder"
+# Claude mode with custom sample size
+/photo-analyze /path/to/photos --mode=claude --sample=50
+
+# Enhanced mode with move instead of copy
+/photo-analyze /path/to/photos --mode=enhanced --organize --move
+
+# Quick mode with verbose output
+/photo-analyze /path/to/photos --mode=quick --verbose
 ```
 
 ## Tips
@@ -77,9 +98,18 @@ claude "Organize photos and group those with detected faces into a separate fold
 3. **Performance**: Claude can handle thousands of photos efficiently
 4. **Verification**: Ask Claude to show you sample categorizations before full processing
 
-## No Setup Required!
+## Setup and Requirements
 
-- No Python installation needed
-- No config files to edit
-- ExifTool is already available to Claude Code
-- Just run the command and Claude handles everything
+### Built-in Tools
+- ExifTool for EXIF analysis (pre-installed)
+- Photo processing capabilities
+- File organization system
+
+### Optional Setup
+- Claude API key for AI mode: `export CLAUDE_API_KEY="your-key"`
+- Run `/project-setup` for environment validation
+
+### No Installation Required
+- All core functionality works out of the box
+- Claude Code handles all dependencies
+- Just run commands and start organizing

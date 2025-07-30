@@ -1,6 +1,6 @@
 # Photo Organizer
 
-A Claude Code workflow for organizing RAW photos by analyzing their EXIF data. Uses Claude's built-in photo-organizer-raw agent to automatically sort photos into categories like Portrait, Landscape, Street, and Event based on how you actually shot them.
+A streamlined Claude Code workflow for organizing photos using EXIF analysis and optional Claude AI integration. Features a unified command system with three analysis modes to match your needs.
 
 ## What It Does
 
@@ -15,32 +15,27 @@ This tool reads the metadata from your RAW photos (like focal length, aperture, 
 
 ## Quick Start
 
-### No Installation Required!
-
-Claude Code has everything built-in. Just run:
+### Using the Unified Command
 
 ```bash
-# Basic organization
-claude "Organize my RAW photos from /Volumes/SDCard/DCIM"
+# Enhanced analysis (default mode)
+/photo-analyze /path/to/photos
 
-# With specific output location
-claude "Organize photos from /Volumes/SDCard/DCIM to ~/Pictures/Organized"
+# Quick analysis for large collections
+/photo-analyze /path/to/photos --mode=quick
 
-# Analysis only (no file moving)
-claude "Analyze EXIF data from /path/to/photos and create a report"
+# Full Claude AI analysis
+/photo-analyze /path/to/photos --mode=claude --organize
+
+# Custom output location
+/photo-analyze /path/to/photos --output=/external/drive/results
 ```
 
-### Advanced Categorization
+### Analysis Modes
 
-Claude automatically analyzes EXIF data and can create custom categories:
-
-```bash
-# Custom categories based on your shooting style
-claude "Analyze my photos and categorize by focal length, aperture, and shooting patterns"
-
-# With facial detection
-claude "Organize photos and group portraits with detected faces"
-```
+- **Quick**: Basic EXIF analysis (fastest)
+- **Enhanced**: Full EXIF + burst detection (default)
+- **Claude**: Enhanced + AI content validation
 
 ## How Categories Work
 
@@ -57,11 +52,12 @@ The tool looks at your camera settings to determine photo types:
 
 ## How It Works
 
-Claude Code's `photo-organizer-raw` agent:
-1. Reads EXIF metadata from all RAW files
-2. Analyzes shooting patterns (focal length, aperture, ISO)
-3. Detects burst sequences for events
-4. Organizes photos into categorized folders by date
+The `photo-organizer-core` agent:
+1. Reads EXIF metadata from all photo files
+2. Analyzes shooting patterns based on selected mode
+3. Detects burst sequences and time clusters
+4. Optionally validates with Claude AI
+5. Organizes photos into categorized folders by date
 
 ## Output Structure
 
@@ -86,27 +82,26 @@ your_output_folder/
 ## Example Commands
 
 ```bash
-# From SD card to organized folders
-claude "Organize RAW photos from /Volumes/SDCard/DCIM"
+# Default enhanced analysis
+/photo-analyze /Volumes/SDCard/DCIM
 
-# Custom categories
-claude "Create categories for wildlife, macro, and architecture photos"
+# Quick analysis with organization
+/photo-analyze /Volumes/SDCard/DCIM --mode=quick --organize
 
-# Analysis report only
-claude "Generate EXIF analysis report for my photo collection"
+# Claude AI analysis with custom sample size
+/photo-analyze /path/to/photos --mode=claude --sample=30
 
-# Specific date range
-claude "Organize photos from January 2024 only"
+# Specify output and organize
+/photo-analyze /path/to/photos --output=/external/drive --organize --move
 ```
 
 ## Performance
 
-On a modern computer:
-- 1,000 photos: 2-3 minutes
-- 5,000 photos: 8-12 minutes
-- 10,000 photos: 15-25 minutes
-
-With Claude AI enabled, add about 2-3x more time.
+| Mode | 1,000 photos | 5,000 photos | 10,000 photos |
+|------|--------------|--------------|---------------|
+| Quick | 1-2 min | 5-8 min | 10-15 min |
+| Enhanced | 3-5 min | 15-20 min | 30-40 min |
+| Claude | 10-15 min | 30-45 min | 60-90 min |
 
 ## Tips
 
